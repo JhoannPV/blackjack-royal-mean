@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../shared/services/auth.service';
 
@@ -18,6 +19,7 @@ export class Login implements OnInit {
     readonly modoRegistro = signal(false);
     readonly mensajeError = signal('');
     readonly mensajeInfo = signal('');
+    readonly cargando = signal(false);
 
     loginUsuario = '';
     loginPassword = '';
@@ -39,12 +41,14 @@ export class Login implements OnInit {
         this.modoRegistro.set(true);
         this.mensajeError.set('');
         this.mensajeInfo.set('');
+        this.cargando.set(false);
     }
 
     activarModoLogin(): void {
         this.modoRegistro.set(false);
         this.mensajeError.set('');
         this.mensajeInfo.set('');
+        this.cargando.set(false);
     }
 
     enviarFormulario(evento: Event): void {
@@ -70,14 +74,18 @@ export class Login implements OnInit {
             return;
         }
 
-        const resultado = this.authService.iniciarSesion(usuario, password);
+        this.cargando.set(true);
 
-        if (!resultado.ok) {
-            this.mensajeError.set(resultado.mensaje);
-            return;
-        }
+        this.authService.iniciarSesion(usuario, password).pipe(
+            finalize(() => this.cargando.set(false))
+        ).subscribe(resultado => {
+            if (!resultado.ok) {
+                this.mensajeError.set(resultado.mensaje);
+                return;
+            }
 
-        this.router.navigateByUrl('/casino');
+            this.router.navigateByUrl('/casino');
+        });
     }
 
     private enviarRegistro(): void {
@@ -90,20 +98,24 @@ export class Login implements OnInit {
             return;
         }
 
-        if (nombre.length < 2 || usuario.length < 3 || password.length < 4) {
-            this.mensajeError.set('Verifica longitudes minimas: nombre 2, usuario 3 y contrasena 4.');
+        if (nombre.length < 2 || usuario.length < 3 || password.length < 6) {
+            this.mensajeError.set('Verifica longitudes minimas: nombre 2, usuario 3 y contrasena 6.');
             return;
         }
 
-        const resultado = this.authService.registrar(nombre, usuario, password);
+        this.cargando.set(true);
 
-        if (!resultado.ok) {
-            this.mensajeError.set(resultado.mensaje);
-            return;
-        }
+        this.authService.registrar(nombre, usuario, password).pipe(
+            finalize(() => this.cargando.set(false))
+        ).subscribe(resultado => {
+            if (!resultado.ok) {
+                this.mensajeError.set(resultado.mensaje);
+                return;
+            }
 
-        this.mensajeInfo.set('Registro exitoso. Entrando al casino...');
-        this.router.navigateByUrl('/casino');
+            this.mensajeInfo.set('Registro exitoso. Entrando al casino...');
+            this.router.navigateByUrl('/casino');
+        });
     }
 
     private resetearFormularios(): void {

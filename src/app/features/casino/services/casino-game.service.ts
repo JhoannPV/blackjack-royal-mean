@@ -1,15 +1,26 @@
+import { HttpClient } from '@angular/common/http';
 import { computed, effect, Injectable, inject, signal } from '@angular/core';
+import { catchError, of } from 'rxjs';
 
-import { type Carta, type RegistroEstadisticas, type ResultadoJuego } from '../models/casino-game.model';
+import { type Carta, type ResultadoJuego } from '../models/casino-game.model';
 import { AuthService } from '../../../shared/services/auth.service';
+import { API_BASE_URL } from '../../../shared/config/api.config';
 import { crearBaraja, valorCarta } from '../utils/casino-deck.util';
+
+interface EstadisticasResponse {
+    ganadas: number;
+    perdidas: number;
+    empatadas: number;
+    totalPartidas: number;
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class CasinoGameService {
-    private readonly storageKeyBase = 'blackjack-royal-estadisticas';
+    private readonly http = inject(HttpClient);
     private readonly authService = inject(AuthService);
+    private readonly apiUrl = `${API_BASE_URL}/stats`;
 
     private readonly deck = signal<Carta[]>([]);
 
@@ -154,19 +165,26 @@ export class CasinoGameService {
     }
 
     private actualizarEstadisticas(resultado: ResultadoJuego): void {
-        if (resultado === 'jugador') {
-            this.ganadas.update(total => total + 1);
-        }
+        const resultadoBackend = resultado === 'jugador'
+            ? 'ganada'
+            : resultado === 'computadora'
+                ? 'perdida'
+                : 'empatada';
 
-        if (resultado === 'computadora') {
-            this.perdidas.update(total => total + 1);
-        }
+        this.http.post<EstadisticasResponse>(
+            `${this.apiUrl}/register-result`,
+            { resultado: resultadoBackend }
+        ).pipe(
+            catchError(() => of(null))
+        ).subscribe(response => {
+            if (!response) {
+                return;
+            }
 
-        if (resultado === 'empate') {
-            this.empatadas.update(total => total + 1);
-        }
-
-        this.guardarEstadisticas();
+            this.ganadas.set(response.ganadas);
+            this.perdidas.set(response.perdidas);
+            this.empatadas.set(response.empatadas);
+        });
     }
 
     private cargarEstadisticas(usuario: string | null): void {
@@ -177,49 +195,12 @@ export class CasinoGameService {
             return;
         }
 
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        const datos = window.localStorage.getItem(this.obtenerStorageKey(usuario));
-
-        if (!datos) {
-            return;
-        }
-
-        try {
-            const registro = JSON.parse(datos) as Partial<RegistroEstadisticas>;
-            this.ganadas.set(typeof registro.ganadas === 'number' ? registro.ganadas : 0);
-            this.perdidas.set(typeof registro.perdidas === 'number' ? registro.perdidas : 0);
-            this.empatadas.set(typeof registro.empatadas === 'number' ? registro.empatadas : 0);
-        } catch {
-            this.ganadas.set(0);
-            this.perdidas.set(0);
-            this.empatadas.set(0);
-        }
-    }
-
-    private guardarEstadisticas(): void {
-        const usuario = this.authService.usuarioActual()?.usuario ?? null;
-
-        if (!usuario) {
-            return;
-        }
-
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        const registro: RegistroEstadisticas = {
-            ganadas: this.ganadas(),
-            perdidas: this.perdidas(),
-            empatadas: this.empatadas()
-        };
-
-        window.localStorage.setItem(this.obtenerStorageKey(usuario), JSON.stringify(registro));
-    }
-
-    private obtenerStorageKey(usuario: string): string {
-        return `${this.storageKeyBase}-${usuario}`;
+        this.http.get<EstadisticasResponse>(`${this.apiUrl}/me`).pipe(
+            catchError(() => of<EstadisticasResponse>({ ganadas: 0, perdidas: 0, empatadas: 0, totalPartidas: 0 }))
+        ).subscribe(response => {
+            this.ganadas.set(response.ganadas);
+            this.perdidas.set(response.perdidas);
+            this.empatadas.set(response.empatadas);
+        });
     }
 }

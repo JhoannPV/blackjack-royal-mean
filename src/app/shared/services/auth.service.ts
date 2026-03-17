@@ -1,12 +1,25 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, of, Observable, tap } from 'rxjs';
 
-import { type ResultadoAuth, type UsuarioRegistrado, type UsuarioSesion } from '../models/auth-user.model';
+import { type ResultadoAuth, type UsuarioSesion } from '../models/auth-user.model';
+import { API_BASE_URL } from '../config/api.config';
+
+interface AuthResponse {
+    token: string;
+    user: {
+        id: string;
+        name: string;
+        username: string;
+    };
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private readonly storageUsuariosKey = 'blackjack-royal-usuarios';
+    private readonly http = inject(HttpClient);
+    private readonly apiUrl = `${API_BASE_URL}/auth`;
     private readonly storageTokenKey = 'blackjack-royal-jwt';
     private readonly storageSesionKey = 'blackjack-royal-sesion';
 
@@ -27,55 +40,45 @@ export class AuthService {
 
     constructor() {
         this.cargarSesion();
+        this.renovarSesion();
     }
 
-    registrar(nombre: string, usuario: string, password: string): ResultadoAuth {
+    registrar(nombre: string, usuario: string, password: string): Observable<ResultadoAuth> {
         const nombreNormalizado = nombre.trim();
         const usuarioNormalizado = usuario.trim().toLowerCase();
         const passwordNormalizado = password.trim();
 
         if (!nombreNormalizado || !usuarioNormalizado || !passwordNormalizado) {
-            return { ok: false, mensaje: 'Completa todos los campos para registrarte.' };
+            return of({ ok: false, mensaje: 'Completa todos los campos para registrarte.' });
         }
 
-        const usuarios = this.obtenerUsuarios();
-        const existe = usuarios.some(item => item.usuario.toLowerCase() === usuarioNormalizado);
-
-        if (existe) {
-            return { ok: false, mensaje: 'Ese usuario ya existe. Prueba con otro.' };
-        }
-
-        const nuevoUsuario: UsuarioRegistrado = {
-            nombre: nombreNormalizado,
+        return this.http.post<AuthResponse>(`${this.apiUrl}/register`, {
+            name: nombreNormalizado,
             usuario: usuarioNormalizado,
             password: passwordNormalizado
-        };
-
-        usuarios.push(nuevoUsuario);
-        this.guardarUsuarios(usuarios);
-        this.crearSesion({ nombre: nuevoUsuario.nombre, usuario: nuevoUsuario.usuario });
-
-        return { ok: true, mensaje: 'Registro exitoso. Sesion iniciada.' };
+        }).pipe(
+            tap(response => this.crearSesionDesdeApi(response)),
+            map(() => ({ ok: true, mensaje: 'Registro exitoso. Sesion iniciada.' })),
+            catchError(error => of({ ok: false, mensaje: this.obtenerMensajeError(error, 'No se pudo registrar el usuario.') }))
+        );
     }
 
-    iniciarSesion(usuario: string, password: string): ResultadoAuth {
+    iniciarSesion(usuario: string, password: string): Observable<ResultadoAuth> {
         const usuarioNormalizado = usuario.trim().toLowerCase();
         const passwordNormalizado = password.trim();
 
         if (!usuarioNormalizado || !passwordNormalizado) {
-            return { ok: false, mensaje: 'Debes ingresar usuario y contrasena.' };
+            return of({ ok: false, mensaje: 'Debes ingresar usuario y contrasena.' });
         }
 
-        const usuarios = this.obtenerUsuarios();
-        const encontrado = usuarios.find(item => item.usuario.toLowerCase() === usuarioNormalizado);
-
-        if (!encontrado || encontrado.password !== passwordNormalizado) {
-            return { ok: false, mensaje: 'Credenciales invalidas.' };
-        }
-
-        this.crearSesion({ nombre: encontrado.nombre, usuario: encontrado.usuario });
-
-        return { ok: true, mensaje: 'Sesion iniciada correctamente.' };
+        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
+            usuario: usuarioNormalizado,
+            password: passwordNormalizado
+        }).pipe(
+            tap(response => this.crearSesionDesdeApi(response)),
+            map(() => ({ ok: true, mensaje: 'Sesion iniciada correctamente.' })),
+            catchError(error => of({ ok: false, mensaje: this.obtenerMensajeError(error, 'Credenciales invalidas.') }))
+        );
     }
 
     sesionValida(): boolean {
@@ -93,13 +96,6 @@ export class AuthService {
         return Boolean(tokenStorage && sesionStorage);
     }
 
-    obtenerUsuariosRegistrados(): UsuarioSesion[] {
-        return this.obtenerUsuarios().map(item => ({
-            nombre: item.nombre,
-            usuario: item.usuario
-        }));
-    }
-
     cerrarSesion(): void {
         this.token.set('');
         this.usuarioActual.set(null);
@@ -112,71 +108,21 @@ export class AuthService {
         window.localStorage.removeItem(this.storageSesionKey);
     }
 
-    private crearSesion(usuario: UsuarioSesion): void {
-        const token = this.generarJwtFicticio(usuario);
+    private crearSesionDesdeApi(response: AuthResponse): void {
+        const usuario: UsuarioSesion = {
+            nombre: response.user.name,
+            usuario: response.user.username
+        };
 
-        this.token.set(token);
+        this.token.set(response.token);
         this.usuarioActual.set(usuario);
 
         if (typeof window === 'undefined') {
             return;
         }
 
-        window.localStorage.setItem(this.storageTokenKey, token);
+        window.localStorage.setItem(this.storageTokenKey, response.token);
         window.localStorage.setItem(this.storageSesionKey, JSON.stringify(usuario));
-    }
-
-    private generarJwtFicticio(usuario: UsuarioSesion): string {
-        const encabezado = { alg: 'HS256', typ: 'JWT' };
-        const payload = {
-            sub: usuario.usuario,
-            name: usuario.nombre,
-            iat: Date.now()
-        };
-
-        return `${this.base64(JSON.stringify(encabezado))}.${this.base64(JSON.stringify(payload))}.firma-ficticia`;
-    }
-
-    private base64(valor: string): string {
-        if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
-            const bytes = new TextEncoder().encode(valor);
-            let binario = '';
-
-            for (const byte of bytes) {
-                binario += String.fromCharCode(byte);
-            }
-
-            return window.btoa(binario);
-        }
-
-        return Buffer.from(valor, 'utf8').toString('base64');
-    }
-
-    private obtenerUsuarios(): UsuarioRegistrado[] {
-        if (typeof window === 'undefined') {
-            return [];
-        }
-
-        const datos = window.localStorage.getItem(this.storageUsuariosKey);
-
-        if (!datos) {
-            return [];
-        }
-
-        try {
-            const usuarios = JSON.parse(datos) as UsuarioRegistrado[];
-            return Array.isArray(usuarios) ? usuarios : [];
-        } catch {
-            return [];
-        }
-    }
-
-    private guardarUsuarios(usuarios: UsuarioRegistrado[]): void {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        window.localStorage.setItem(this.storageUsuariosKey, JSON.stringify(usuarios));
     }
 
     private cargarSesion(): void {
@@ -203,5 +149,30 @@ export class AuthService {
         } catch {
             this.cerrarSesion();
         }
+    }
+
+    private renovarSesion(): void {
+        const token = this.token();
+
+        if (!token) {
+            return;
+        }
+
+        this.http.get<AuthResponse>(`${this.apiUrl}/renew-token`).pipe(
+            tap(response => this.crearSesionDesdeApi(response)),
+            catchError(() => {
+                this.cerrarSesion();
+                return of(null);
+            })
+        ).subscribe();
+    }
+
+    private obtenerMensajeError(error: unknown, fallback: string): string {
+        if (typeof error !== 'object' || error === null) {
+            return fallback;
+        }
+
+        const apiError = (error as { error?: { error?: string } }).error?.error;
+        return typeof apiError === 'string' && apiError.trim().length > 0 ? apiError : fallback;
     }
 }
