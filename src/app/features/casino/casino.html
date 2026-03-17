@@ -1,4 +1,8 @@
 <div class="game-container">
+    <app-result-modal [visible]="juego.modalVisible()" [titulo]="juego.modalTitulo()" [mensaje]="juego.modalMensaje()"
+        [tipo]="juego.modalTipo()" (cerrar)="juego.cerrarModalResultado()">
+    </app-result-modal>
+
     <header class="game-header">
         <app-user-menu [mostrarCasino]="false" [mostrarEstadisticas]="true" [mostrarEstadisticasGlobales]="true" />
 

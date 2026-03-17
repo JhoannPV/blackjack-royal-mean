@@ -3,12 +3,13 @@ import { Router } from '@angular/router';
 
 import { type Carta } from './models/casino-game.model';
 import { UserMenu } from '../../shared/components/user-menu/user-menu';
+import { ResultModal } from '../../shared/components/result-modal/result-modal';
 import { CasinoGameService } from './services/casino-game.service';
 import { rutaCarta } from './utils/casino-deck.util';
 
 @Component({
     selector: 'app-casino',
-    imports: [UserMenu],
+    imports: [UserMenu, ResultModal],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './casino.html',
     styleUrl: './casino.css'

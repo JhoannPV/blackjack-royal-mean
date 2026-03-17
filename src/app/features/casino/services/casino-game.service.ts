@@ -32,6 +32,10 @@ export class CasinoGameService {
 
     readonly juegoTerminado = signal(true);
     readonly mensajeEstado = signal('Pulsa "Nuevo Juego" para empezar.');
+    readonly modalVisible = signal(false);
+    readonly modalTitulo = signal('Resultado');
+    readonly modalMensaje = signal('');
+    readonly modalTipo = signal<'ganador' | 'perdedor' | 'empate'>('empate');
 
     readonly ganadas = signal(0);
     readonly perdidas = signal(0);
@@ -56,6 +60,7 @@ export class CasinoGameService {
         this.puntosComputadora.set(0);
         this.juegoTerminado.set(false);
         this.mensajeEstado.set('Turno del jugador: pide una carta o plántate.');
+        this.cerrarModalResultado();
     }
 
     pedirCartaJugador(): void {
@@ -130,25 +135,33 @@ export class CasinoGameService {
     }
 
     private notificarResultado(resultado: ResultadoJuego): void {
-        let mensaje = 'Nadie gana :(';
+        let mensaje = 'Nadie gana 😞';
+        let titulo = 'Empate';
+        let tipo: 'ganador' | 'perdedor' | 'empate' = 'empate';
 
         if (resultado === 'jugador') {
             mensaje = 'Jugador gana';
+            titulo = 'Ganaste';
+            tipo = 'ganador';
         }
 
         if (resultado === 'computadora') {
             mensaje = 'Computadora gana';
+            titulo = 'Perdiste';
+            tipo = 'perdedor';
         }
 
         this.actualizarEstadisticas(resultado);
 
         this.mensajeEstado.set(`Resultado: ${mensaje}`);
+        this.modalTitulo.set(titulo);
+        this.modalMensaje.set(mensaje);
+        this.modalTipo.set(tipo);
+        this.modalVisible.set(true);
+    }
 
-        if (typeof window !== 'undefined') {
-            setTimeout(() => {
-                window.alert(mensaje);
-            }, 100);
-        }
+    cerrarModalResultado(): void {
+        this.modalVisible.set(false);
     }
 
     private tomarCarta(): Carta {

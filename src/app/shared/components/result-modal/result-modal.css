@@ -1,0 +1,70 @@
+:host {
+    display: contents;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.68);
+    display: grid;
+    place-items: center;
+    z-index: 200;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+}
+
+.modal-card {
+    width: min(420px, 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: linear-gradient(165deg, #09170f 0%, #12211c 100%);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    color: #f4f4f4;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.modal-header.ganador {
+    background: linear-gradient(135deg, rgba(38, 166, 91, 0.35), rgba(19, 104, 56, 0.2));
+    color: #b8ffd9;
+}
+
+.modal-header.perdedor {
+    background: linear-gradient(135deg, rgba(196, 30, 58, 0.35), rgba(99, 13, 30, 0.22));
+    color: #ffd0da;
+}
+
+.modal-header.empate {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(105, 84, 22, 0.18));
+    color: #f4e4ba;
+}
+
+.modal-message {
+    margin: 0;
+    padding: 20px 18px 12px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.modal-close {
+    margin: 0 18px 18px;
+    width: calc(100% - 36px);
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #1b1b1b;
+    background: linear-gradient(135deg, #d4af37, #f4e4ba);
+}
