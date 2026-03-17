@@ -1,5 +1,5 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, of, Observable, tap } from 'rxjs';
 
 import { type ResultadoAuth, type UsuarioSesion } from '../models/auth-user.model';
@@ -83,18 +83,34 @@ export class AuthService {
     }
 
     sesionValida(): boolean {
-        if (!this.autenticado()) {
-            return false;
-        }
-
         if (typeof window === 'undefined') {
             return true;
         }
 
-        const tokenStorage = window.localStorage.getItem(this.storageTokenKey);
-        const sesionStorage = window.localStorage.getItem(this.storageSesionKey);
+        if (this.autenticado()) {
+            return true;
+        }
 
-        return Boolean(tokenStorage && sesionStorage);
+        const tokenStorage = window.localStorage.getItem(this.storageTokenKey);
+        const sesionStorageRaw = window.localStorage.getItem(this.storageSesionKey);
+
+        if (!tokenStorage || !sesionStorageRaw) {
+            return false;
+        }
+
+        try {
+            const sesionStorage = JSON.parse(sesionStorageRaw) as UsuarioSesion;
+
+            if (!sesionStorage?.usuario || !sesionStorage?.nombre) {
+                return false;
+            }
+
+            this.token.set(tokenStorage);
+            this.usuarioActual.set(sesionStorage);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     cerrarSesion(): void {
@@ -170,13 +186,21 @@ export class AuthService {
 
                 this.crearSesionDesdeApi(response);
             }),
-            catchError(() => {
-                if (requestVersion === this.sessionVersion) {
+            catchError((error: unknown) => {
+                if (requestVersion === this.sessionVersion && this.debeInvalidarSesion(error)) {
                     this.cerrarSesion();
                 }
                 return of(null);
             })
         ).subscribe();
+    }
+
+    private debeInvalidarSesion(error: unknown): boolean {
+        if (!(error instanceof HttpErrorResponse)) {
+            return false;
+        }
+
+        return error.status === 401 || error.status === 403;
     }
 
     private obtenerMensajeError(error: unknown, fallback: string): string {
