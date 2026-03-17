@@ -1,59 +1,91 @@
-# BlackjackRoyalMean
+# Blackjack Royal Mean (Frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.1.
+Aplicación frontend en Angular para jugar Blackjack, autenticarse, consultar estadísticas personales y estadísticas globales.
 
-## Development server
+## Tecnologías
 
-To start a local development server, run:
+- Angular 21
+- TypeScript
+- Angular Router + Guards
+- SSR (configuración incluida por Angular)
 
-```bash
-ng serve
+## Funcionalidades principales
+
+- Inicio de sesión y registro de usuarios.
+- Juego de Blackjack.
+- Protección de rutas con guardas de autenticación.
+- Vista de estadísticas del jugador autenticado.
+- Vista de estadísticas globales.
+
+Rutas principales de la aplicación:
+
+- `/casino`
+- `/login`
+- `/estadisticas`
+- `/estadisticas-globales`
+
+## Requisitos previos
+
+- Node.js 22+
+- npm 11+
+- Backend del proyecto ejecutándose (por defecto en `http://localhost:3000/api`)
+
+## Configuración de API
+
+La URL base del backend se define en:
+
+`src/app/shared/config/api.config.ts`
+
+Valor actual:
+
+```ts
+export const API_BASE_URL = 'http://localhost:3000/api';
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Si cambias el puerto o dominio del backend, actualiza ese archivo.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Instalación
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Scripts disponibles
 
 ```bash
-ng generate --help
+# Desarrollo
+npm start
+
+# Build de producción
+npm run build
+
+# Build en modo watch
+npm run watch
+
+# Pruebas
+npm test
 ```
 
-## Building
+## Ejecución en desarrollo
 
-To build the project run:
+1. Levanta el backend.
+2. Ejecuta este frontend:
 
 ```bash
-ng build
+npm start
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+3. Abre: `http://localhost:4200`
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Build para producción
 
 ```bash
-ng test
+npm run build
 ```
 
-## Running end-to-end tests
+Los archivos compilados se generan en `dist/`.
 
-For end-to-end (e2e) testing, run:
+## Notas
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- El proyecto incluye configuración para server-side rendering.
+- Si aparece un error de CORS o autenticación, verifica que el backend esté levantado y que `API_BASE_URL` apunte correctamente.
