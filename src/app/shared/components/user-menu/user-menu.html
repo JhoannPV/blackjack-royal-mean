@@ -1,0 +1,30 @@
+<div class="profile-corner">
+    <button type="button" class="profile-trigger" aria-label="Abrir menu de perfil" [attr.aria-expanded]="menuAbierto()"
+        (click)="alternarMenu()">
+        {{ authService.inicialUsuario() }}
+    </button>
+
+    @if (menuAbierto()) {
+    <div class="profile-menu" role="menu" aria-label="Menu de usuario">
+        <p class="profile-name">{{ authService.nombreUsuario() }}</p>
+
+        @if (mostrarCasino()) {
+        <button type="button" class="profile-action profile-action-secondary" (click)="irACasino()">Ir al
+            casino</button>
+        }
+
+        @if (mostrarEstadisticas()) {
+        <button type="button" class="profile-action profile-action-secondary" (click)="irAEstadisticas()">Mis
+            estadisticas</button>
+        }
+
+        @if (mostrarEstadisticasGlobales()) {
+        <button type="button" class="profile-action profile-action-secondary" (click)="irAEstadisticasGlobales()">
+            Estadisticas globales
+        </button>
+        }
+
+        <button type="button" class="profile-action" (click)="cerrarSesion()">Cerrar sesion</button>
+    </div>
+    }
+</div>

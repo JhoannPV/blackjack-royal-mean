@@ -1,4 +1,88 @@
-<h1>Casino</h1>
-<p>Bienvenido al Casino Blackjack Royal</p>
+<div class="game-container">
+    <header class="game-header">
+        <app-user-menu [mostrarCasino]="false" [mostrarEstadisticas]="true" [mostrarEstadisticasGlobales]="true" />
 
-<app-footer />
+        <div class="header-decoration left"></div>
+        <h1 class="game-title">
+            <span class="suit">♠</span>
+            Blackjack Royal
+            <span class="suit">♦</span>
+        </h1>
+        <div class="header-decoration right"></div>
+    </header>
+
+    <div class="control-panel" aria-label="Panel de control del juego">
+        <button id="btnNuevo" class="btn-game btn-new" type="button" (click)="nuevoJuego()">
+            <span class="btn-icon">🎲</span>
+            Nuevo Juego
+        </button>
+        <button id="btnPedir" class="btn-game btn-hit" type="button" (click)="pedirCarta()"
+            [disabled]="!juego.puedePedir()">
+            <span class="btn-icon">🃏</span>
+            Pedir Carta
+        </button>
+        <button id="btnDetener" class="btn-game btn-stand" type="button" (click)="detenerJuego()"
+            [disabled]="!juego.puedeDetener()">
+            <span class="btn-icon">✋</span>
+            Plantarse
+        </button>
+    </div>
+
+    <details class="stats-dropdown">
+        <summary>Estadísticas</summary>
+        <div class="stats-content" role="region" aria-label="Resumen de estadísticas del jugador">
+            <p><strong>Ganadas:</strong> {{ juego.ganadas() }}</p>
+            <p><strong>Perdidas:</strong> {{ juego.perdidas() }}</p>
+            <p><strong>Empatadas:</strong> {{ juego.empatadas() }}</p>
+            <p><strong>Total:</strong> {{ juego.totalPartidas() }}</p>
+            <button type="button" class="stats-link" (click)="irAEstadisticas()">Ir a la pagina de estadisticas</button>
+        </div>
+    </details>
+
+    <div class="game-table">
+        <section class="player-area" aria-label="Zona del jugador">
+            <div class="player-info">
+                <div class="player-avatar" aria-hidden="true">👤</div>
+                <div class="player-details">
+                    <h2 class="player-name">Jugador</h2>
+                    <div class="score-display">
+                        <span class="score-label">Puntos:</span>
+                        <small class="score-value">{{ juego.puntosJugador() }}</small>
+                    </div>
+                </div>
+            </div>
+            <div id="jugador-cartas" class="cards-container divCartas">
+                @for (carta of juego.cartasJugador(); track carta + $index) {
+                <img class="carta" [src]="obtenerRutaCarta(carta)" [alt]="'Carta del jugador ' + carta" />
+                }
+            </div>
+        </section>
+
+        <div class="table-divider" aria-hidden="true">
+            <span class="divider-text">VS</span>
+        </div>
+
+        <section class="computer-area" aria-label="Zona del dealer">
+            <div class="player-info">
+                <div class="player-avatar" aria-hidden="true">🤖</div>
+                <div class="player-details">
+                    <h2 class="player-name">Dealer</h2>
+                    <div class="score-display">
+                        <span class="score-label">Puntos:</span>
+                        <small class="score-value">{{ juego.puntosComputadora() }}</small>
+                    </div>
+                </div>
+            </div>
+            <div id="computadora-cartas" class="cards-container divCartas">
+                @for (carta of juego.cartasComputadora(); track carta + $index) {
+                <img class="carta" [src]="obtenerRutaCarta(carta)" [alt]="'Carta del dealer ' + carta" />
+                }
+            </div>
+        </section>
+    </div>
+
+    <footer class="game-footer">
+        <p>♣ La casa siempre tiene ventaja... ¿o no? ♥</p>
+        <p class="status-message">{{ juego.mensajeEstado() }}</p>
+    </footer>
+</div>

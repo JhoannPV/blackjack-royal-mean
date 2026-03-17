@@ -1,1 +1,98 @@
-/* Login styles */
+:host {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.2), transparent 30%),
+        radial-gradient(circle at 85% 85%, rgba(46, 204, 113, 0.18), transparent 28%),
+        linear-gradient(160deg, #08130d 0%, #101c2d 100%);
+    padding: 20px;
+}
+
+.auth-shell {
+    width: min(480px, 100%);
+}
+
+.auth-card {
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 16px;
+    padding: 24px;
+    background: rgba(7, 12, 24, 0.86);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+    color: #f4f4f4;
+}
+
+.auth-header h1 {
+    margin: 0;
+    color: #d4af37;
+    letter-spacing: 0.04em;
+}
+
+.auth-header p {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-tabs {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.tab-btn {
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: transparent;
+    color: #f4e4ba;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: rgba(212, 175, 55, 0.18);
+}
+
+.auth-form {
+    margin-top: 18px;
+    display: grid;
+    gap: 12px;
+}
+
+.auth-form label {
+    display: grid;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.auth-form input {
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(6, 8, 14, 0.65);
+    color: #fff;
+    padding: 11px 12px;
+}
+
+.feedback {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.feedback.error {
+    color: #ff9aa9;
+}
+
+.feedback.info {
+    color: #98f5c7;
+}
+
+.submit-btn {
+    margin-top: 4px;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    background: linear-gradient(135deg, #d4af37, #f4e4ba);
+    cursor: pointer;
+}

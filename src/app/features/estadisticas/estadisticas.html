@@ -1,2 +1,32 @@
-<h1>Mis Estadísticas</h1>
-<p>Estadísticas del jugador</p>
+<section class="stats-page" aria-label="Estadísticas del jugador">
+    <app-user-menu [mostrarCasino]="true" [mostrarEstadisticas]="false" [mostrarEstadisticasGlobales]="true" />
+
+    <header class="stats-header">
+        <h1>Mis Estadísticas</h1>
+        <p>Resumen acumulado de tus partidas de Blackjack Royal</p>
+    </header>
+
+    <div class="stats-grid">
+        <article class="stats-card wins">
+            <h2>Ganadas</h2>
+            <strong>{{ juego.ganadas() }}</strong>
+        </article>
+
+        <article class="stats-card loses">
+            <h2>Perdidas</h2>
+            <strong>{{ juego.perdidas() }}</strong>
+        </article>
+
+        <article class="stats-card draws">
+            <h2>Empatadas</h2>
+            <strong>{{ juego.empatadas() }}</strong>
+        </article>
+    </div>
+
+    <article class="stats-total">
+        <h2>Total de partidas</h2>
+        <strong>{{ juego.totalPartidas() }}</strong>
+    </article>
+
+    <button type="button" class="back-link" (click)="irACasino()">Volver al casino</button>
+</section>

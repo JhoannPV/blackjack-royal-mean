@@ -1,2 +1,75 @@
-<h1>Iniciar Sesión</h1>
-<p>Página de login</p>
+<section class="auth-shell" aria-label="Autenticacion de usuario">
+    <article class="auth-card">
+        <header class="auth-header">
+            <h1>Blackjack Royal</h1>
+            <p>Inicia sesion o registrate para entrar al casino</p>
+        </header>
+
+        <div class="auth-tabs" role="tablist" aria-label="Tipo de acceso">
+            <button type="button" role="tab" class="tab-btn" [class.active]="!modoRegistro()"
+                (click)="activarModoLogin()">
+                Iniciar sesion
+            </button>
+            <button type="button" role="tab" class="tab-btn" [class.active]="modoRegistro()"
+                (click)="activarModoRegistro()">
+                Registrarse
+            </button>
+        </div>
+
+        @if (modoRegistro()) {
+        <form class="auth-form" (submit)="enviarFormulario($event)">
+            <label>
+                Nombre
+                <input type="text" name="registroNombre" placeholder="Tu nombre" [(ngModel)]="registroNombre" />
+            </label>
+
+            <label>
+                Usuario
+                <input type="text" name="registroUsuario" placeholder="Tu usuario" [(ngModel)]="registroUsuario" />
+            </label>
+
+            <label>
+                Contrasena
+                <input type="password" name="registroPassword" placeholder="Tu contrasena"
+                    [(ngModel)]="registroPassword" />
+            </label>
+
+            @if (mensajeError()) {
+            <p class="feedback error">{{ mensajeError() }}</p>
+            }
+
+            @if (mensajeInfo()) {
+            <p class="feedback info">{{ mensajeInfo() }}</p>
+            }
+
+            <button class="submit-btn" type="submit">
+                {{ modoRegistro() ? 'Registrarme e ingresar' : 'Ingresar al casino' }}
+            </button>
+        </form>
+        } @else {
+        <form class="auth-form" (submit)="enviarFormulario($event)">
+            <label>
+                Usuario
+                <input type="text" name="loginUsuario" placeholder="Tu usuario" [(ngModel)]="loginUsuario" />
+            </label>
+
+            <label>
+                Contrasena
+                <input type="password" name="loginPassword" placeholder="Tu contrasena" [(ngModel)]="loginPassword" />
+            </label>
+
+            @if (mensajeError()) {
+            <p class="feedback error">{{ mensajeError() }}</p>
+            }
+
+            @if (mensajeInfo()) {
+            <p class="feedback info">{{ mensajeInfo() }}</p>
+            }
+
+            <button class="submit-btn" type="submit">
+                {{ modoRegistro() ? 'Registrarme e ingresar' : 'Ingresar al casino' }}
+            </button>
+        </form>
+        }
+    </article>
+</section>

@@ -1,2 +1,69 @@
-<h1>Estadísticas Globales</h1>
-<p>Ranking de todos los jugadores</p>
+<section class="global-stats" aria-label="Ranking global de jugadores">
+    <app-user-menu [mostrarCasino]="true" [mostrarEstadisticas]="true" [mostrarEstadisticasGlobales]="false" />
+
+    <header class="global-header">
+        <h1>Estadísticas Globales</h1>
+        <p>Ranking total de jugadores por partidas ganadas y efectividad</p>
+    </header>
+
+    <div class="global-toolbar">
+        <input type="text" class="filter-input" placeholder="Filtrar por nombre o usuario" [value]="filtro()"
+            (input)="actualizarFiltro($any($event.target).value)" />
+
+        <label class="category-filter-label" for="categoryFilter">Categoria</label>
+        <select id="categoryFilter" class="category-filter" [value]="categoria()"
+            (change)="actualizarCategoria($any($event.target).value)">
+            <option value="todas">Todas</option>
+            <option value="ganadas">Partidas ganadas</option>
+            <option value="perdidas">Partidas perdidas</option>
+            <option value="empatadas">Empates</option>
+        </select>
+    </div>
+
+    @if (ranking().length === 0) {
+    <article class="empty-state">
+        <h2>Aun no hay jugadores registrados</h2>
+        <p>Cuando los usuarios se registren y jueguen partidas, apareceran aqui.</p>
+    </article>
+    } @else if (rankingFiltrado().length === 0) {
+    <article class="empty-state">
+        <h2>Sin coincidencias</h2>
+        <p>No hay jugadores que coincidan con el filtro actual.</p>
+    </article>
+    } @else {
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Top</th>
+                    <th>#</th>
+                    <th>Jugador</th>
+                    <th>Usuario</th>
+                    <th>Ganadas</th>
+                    <th>Perdidas</th>
+                    <th>Empatadas</th>
+                    <th>Total</th>
+                    <th>Efectividad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (jugador of rankingFiltrado(); track jugador.usuario) {
+                <tr>
+                    <td class="medal-cell">{{ obtenerMedalla(jugador.posicion) }}</td>
+                    <td>{{ jugador.posicion }}</td>
+                    <td>{{ jugador.nombre }}</td>
+                    <td>{{ jugador.usuario }}</td>
+                    <td>{{ jugador.ganadas }}</td>
+                    <td>{{ jugador.perdidas }}</td>
+                    <td>{{ jugador.empatadas }}</td>
+                    <td>{{ jugador.total }}</td>
+                    <td>{{ jugador.efectividad.toFixed(1) }}%</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+
+    <button type="button" class="back-btn" (click)="irACasino()">Volver al casino</button>
+</section>

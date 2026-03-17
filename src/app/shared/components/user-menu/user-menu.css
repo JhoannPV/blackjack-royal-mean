@@ -1,0 +1,53 @@
+.profile-corner {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+}
+
+.profile-trigger {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #d4af37;
+    background: rgba(6, 15, 10, 0.95);
+    color: #f4e4ba;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.profile-menu {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 220px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: rgba(6, 14, 10, 0.96);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+    z-index: 50;
+}
+
+.profile-name {
+    margin: 0 0 10px;
+    color: #f4e4ba;
+    font-weight: 700;
+}
+
+.profile-action {
+    width: 100%;
+    border: 1px solid rgba(196, 30, 58, 0.65);
+    color: #ffd7de;
+    background: rgba(196, 30, 58, 0.2);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.profile-action-secondary {
+    margin-bottom: 8px;
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.16);
+    color: #f4e4ba;
+}
