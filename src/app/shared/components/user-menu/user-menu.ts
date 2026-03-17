@@ -41,6 +41,6 @@ export class UserMenu {
     cerrarSesion(): void {
         this.authService.cerrarSesion();
         this.menuAbierto.set(false);
-        this.router.navigateByUrl('/login');
+        this.router.navigateByUrl('/login', { replaceUrl: true });
     }
 }

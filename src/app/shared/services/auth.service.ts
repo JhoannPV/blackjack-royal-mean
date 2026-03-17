@@ -22,6 +22,7 @@ export class AuthService {
     private readonly apiUrl = `${API_BASE_URL}/auth`;
     private readonly storageTokenKey = 'blackjack-royal-jwt';
     private readonly storageSesionKey = 'blackjack-royal-sesion';
+    private sessionVersion = 0;
 
     readonly token = signal('');
     readonly usuarioActual = signal<UsuarioSesion | null>(null);
@@ -97,6 +98,7 @@ export class AuthService {
     }
 
     cerrarSesion(): void {
+        this.sessionVersion += 1;
         this.token.set('');
         this.usuarioActual.set(null);
 
@@ -153,15 +155,25 @@ export class AuthService {
 
     private renovarSesion(): void {
         const token = this.token();
+        const requestVersion = this.sessionVersion;
 
         if (!token) {
             return;
         }
 
         this.http.get<AuthResponse>(`${this.apiUrl}/renew-token`).pipe(
-            tap(response => this.crearSesionDesdeApi(response)),
+            tap(response => {
+                // Evita reactivar la sesion si el usuario cerro sesion mientras la peticion seguia en vuelo.
+                if (requestVersion !== this.sessionVersion) {
+                    return;
+                }
+
+                this.crearSesionDesdeApi(response);
+            }),
             catchError(() => {
-                this.cerrarSesion();
+                if (requestVersion === this.sessionVersion) {
+                    this.cerrarSesion();
+                }
                 return of(null);
             })
         ).subscribe();
